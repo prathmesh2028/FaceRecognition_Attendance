@@ -1,62 +1,69 @@
 const fs = require('fs');
 const path = require('path');
 
-const DB_FILE = path.join(__dirname, '../database.json');
+const REG_FILE = path.join(__dirname, '../registrations.json');
+const HIST_FILE = path.join(__dirname, '../history.json');
 
-// Initialize DB if not exists
-if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({ students: [], attendance: [] }, null, 2));
+// Initialize Files if not exist
+if (!fs.existsSync(REG_FILE)) {
+    fs.writeFileSync(REG_FILE, JSON.stringify([], null, 2));
+}
+if (!fs.existsSync(HIST_FILE)) {
+    fs.writeFileSync(HIST_FILE, JSON.stringify([], null, 2));
 }
 
-const readData = () => {
+const readJson = (file) => {
     try {
-        const data = fs.readFileSync(DB_FILE);
+        const data = fs.readFileSync(file);
         return JSON.parse(data);
     } catch (err) {
-        console.error("Error reading DB:", err);
-        return { students: [], attendance: [] };
+        console.error(`Error reading ${file}:`, err);
+        return [];
     }
 };
 
-const writeData = (data) => {
+const writeJson = (file, data) => {
     try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
         return true;
     } catch (err) {
-        console.error("Error writing DB:", err);
+        console.error(`Error writing ${file}:`, err);
         return false;
     }
 };
 
 module.exports = {
-    getStudents: () => readData().students,
-    getAttendance: () => readData().attendance,
+    getStudents: () => readJson(REG_FILE),
+    getAttendance: () => readJson(HIST_FILE),
+
     addStudent: (student) => {
-        const data = readData();
-        data.students.push(student);
-        writeData(data);
+        const students = readJson(REG_FILE);
+        students.push(student);
+        writeJson(REG_FILE, students);
         return student;
     },
+
     addAttendance: (record) => {
-        const data = readData();
-        data.attendance.push(record);
-        writeData(data);
+        const history = readJson(HIST_FILE);
+        history.push(record);
+        writeJson(HIST_FILE, history);
         return record;
     },
+
     clearAttendance: () => {
-        const data = readData();
-        data.attendance = [];
-        writeData(data);
+        writeJson(HIST_FILE, []);
     },
+
     deleteStudent: (rollNo) => {
-        const data = readData();
-        const initialLength = data.students.length;
-        data.students = data.students.filter(s => s.roll_no !== rollNo);
-        writeData(data);
-        return data.students.length < initialLength;
+        let students = readJson(REG_FILE);
+        const initialLength = students.length;
+        students = students.filter(s => s.roll_no !== rollNo);
+        writeJson(REG_FILE, students);
+        return students.length < initialLength;
     },
+
     findStudentByRollNo: (rollNo) => {
-        const data = readData();
-        return data.students.find(s => s.roll_no === rollNo);
+        const students = readJson(REG_FILE);
+        return students.find(s => s.roll_no === rollNo);
     }
 };
