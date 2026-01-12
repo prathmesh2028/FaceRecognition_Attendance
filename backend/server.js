@@ -6,7 +6,7 @@ let visionRoutes;
 try {
     visionRoutes = require("./routes/visionRoute");
 } catch (error) {
-    console.warn("⚠️ Vision Routes not loaded (service-account.json missing or other error).");
+    // console.warn("⚠️ Vision Routes not loaded (service-account.json missing).");
 }
 
 const app = express();
@@ -21,9 +21,13 @@ if (visionRoutes) {
 
 // Register User (Store Name + Face Descriptor)
 app.post("/api/register", (req, res) => {
+    console.log("📥 Registration Request Received:", req.body.name, req.body.rollNo);
     try {
         const { name, rollNo, descriptor } = req.body;
-        if (!name || !rollNo || !descriptor) return res.status(400).json({ success: false, msg: "Name, Roll No, and face data required" });
+        if (!name || !rollNo || !descriptor) {
+            console.log("❌ Missing Data:", { name, rollNo, descriptor: descriptor ? "Present" : "Missing" });
+            return res.status(400).json({ success: false, msg: "Name, Roll No, and face data required" });
+        }
 
         const existing = jsonDb.findStudentByRollNo(rollNo);
         if (existing) {

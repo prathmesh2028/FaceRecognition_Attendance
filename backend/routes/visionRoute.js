@@ -10,7 +10,7 @@ try {
     keyFilename: path.join(__dirname, "..", "service-account.json"),
   });
 } catch (err) {
-  console.warn("⚠️ Google Vision Client could not be initialized (missing service-account.json?)");
+  // console.warn("Vision API not initialized");
 }
 
 // Multer config for file uploads
