@@ -1,5 +1,29 @@
 {
   "dependencies": {
     "face-api.js": "^0.22.2"
+  },
+  "name": "facerecognition_attendence",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm start --prefix frontend",
+    "install-all": "npm install --prefix frontend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prathmesh2028/FaceRecognition_Attendance.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/prathmesh2028/FaceRecognition_Attendance/issues"
+  },
+  "homepage": "https://github.com/prathmesh2028/FaceRecognition_Attendance#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
