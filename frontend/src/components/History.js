@@ -66,13 +66,26 @@ function History() {
                         <tbody>
                             {history.length > 0 ? (
                                 history.map((record, index) => {
-                                    const dateObj = new Date(record.timestamp);
+                                    // Ensure timestamp is valid ISO UTC
+                                    let dateStr = record.timestamp;
+                                    if (typeof dateStr === 'string') {
+                                        // Replace space with T if missing (common SQL format)
+                                        if (!dateStr.includes('T')) {
+                                            dateStr = dateStr.replace(' ', 'T');
+                                        }
+                                        // Append Z if missing
+                                        if (!dateStr.endsWith('Z')) {
+                                            dateStr += 'Z';
+                                        }
+                                    }
+                                    const dateObj = new Date(dateStr);
+
                                     return (
                                         <tr key={index}>
                                             <td>{record.rollNo || "N/A"}</td>
                                             <td>{record.name}</td>
-                                            <td>{dateObj.toLocaleDateString()}</td>
-                                            <td>{dateObj.toLocaleTimeString()}</td>
+                                            <td>{dateObj.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                                            <td>{dateObj.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })} (IST)</td>
                                         </tr>
                                     );
                                 })

@@ -54,6 +54,9 @@ app.post("/api/mark-attendance", (req, res) => {
             let bestMatch = null;
             let minDistance = 0.6; // Threshold
 
+            // DEBUG: Log how many students we are comparing against
+            console.log(`Checking against ${students.length} registered students...`);
+
             students.forEach(student => {
                 // Parse descriptor from JSON
                 const storedDesc = typeof student.face_descriptor === 'string'
@@ -66,6 +69,8 @@ app.post("/api/mark-attendance", (req, res) => {
                     descriptor.reduce((sum, val, i) => sum + Math.pow(val - storedDesc[i], 2), 0)
                 );
 
+                console.log(`Comparing with ${student.name}: Distance = ${distance}`);
+
                 if (distance < minDistance) {
                     minDistance = distance;
                     bestMatch = student;
@@ -73,10 +78,11 @@ app.post("/api/mark-attendance", (req, res) => {
             });
 
             if (bestMatch) {
+                console.log(`✅ MATCH FOUND: ${bestMatch.name} (Distance: ${minDistance})`);
                 // Check within last 30 mins using Roll No
                 const checkQuery = `
-                    SELECT * FROM attendance 
-                    WHERE roll_no = ? 
+                    SELECT * FROM attendance
+                    WHERE roll_no = ?
                     AND timestamp > (NOW() - INTERVAL 30 MINUTE)
                 `;
 

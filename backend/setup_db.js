@@ -11,12 +11,17 @@ const createTables = async () => {
         )
     `;
 
+    // Drop table if exists to ensure schema update
+    db.query("DROP TABLE IF EXISTS attendance", (err) => {
+        if (err) console.error("Error dropping attendance table:", err);
+    });
+
     const attendanceTable = `
         CREATE TABLE IF NOT EXISTS attendance (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            student_id INT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+            name VARCHAR(255) NOT NULL,
+            roll_no VARCHAR(50) NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `;
 

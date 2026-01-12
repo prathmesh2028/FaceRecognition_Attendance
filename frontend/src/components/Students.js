@@ -59,7 +59,14 @@ function Students() {
                                     <tr key={student.id}>
                                         <td>{student.rollNo || "N/A"}</td>
                                         <td>{student.name}</td>
-                                        <td>{new Date(student.registeredAt).toLocaleString()}</td>
+                                        <td>{(() => {
+                                            let d = student.registeredAt;
+                                            if (typeof d === 'string') {
+                                                if (!d.includes('T')) d = d.replace(' ', 'T');
+                                                if (!d.endsWith('Z')) d += 'Z';
+                                            }
+                                            return new Date(d).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+                                        })()} (IST)</td>
                                         <td>
                                             <button
                                                 className="btn"
