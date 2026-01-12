@@ -4,6 +4,10 @@ const path = require('path');
 const REG_FILE = path.join(__dirname, '../registrations.json');
 const HIST_FILE = path.join(__dirname, '../history.json');
 
+console.log("📂 Database Files Location:");
+console.log("   👉 Registrations:", path.resolve(REG_FILE));
+console.log("   👉 History:", path.resolve(HIST_FILE));
+
 // Initialize Files if not exist
 try {
     if (!fs.existsSync(REG_FILE)) {
