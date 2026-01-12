@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import axios from "axios";
 
 function History() {
@@ -11,7 +11,9 @@ function History() {
 
     const fetchHistory = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/attendance-history");
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/attendance-history`
+            );
             if (res.data.success) {
                 setHistory(res.data.history);
             }
@@ -24,7 +26,9 @@ function History() {
     const clearHistory = async () => {
         if (!window.confirm("Are you sure you want to clear ALL attendance history?")) return;
         try {
-            const res = await axios.delete("http://localhost:5000/api/attendance-history");
+            const res = await axios.delete(
+                `${process.env.REACT_APP_API_URL}/api/attendance-history`
+            );
             if (res.data.success) {
                 setHistory([]);
                 alert("History cleared!");
@@ -66,14 +70,11 @@ function History() {
                         <tbody>
                             {history.length > 0 ? (
                                 history.map((record, index) => {
-                                    // Ensure timestamp is valid ISO UTC
                                     let dateStr = record.timestamp;
                                     if (typeof dateStr === 'string') {
-                                        // Replace space with T if missing (common SQL format)
                                         if (!dateStr.includes('T')) {
                                             dateStr = dateStr.replace(' ', 'T');
                                         }
-                                        // Append Z if missing
                                         if (!dateStr.endsWith('Z')) {
                                             dateStr += 'Z';
                                         }
@@ -84,8 +85,18 @@ function History() {
                                         <tr key={index}>
                                             <td>{record.rollNo || "N/A"}</td>
                                             <td>{record.name}</td>
-                                            <td>{dateObj.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
-                                            <td>{dateObj.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })} (IST)</td>
+                                            <td>
+                                                {dateObj.toLocaleDateString(
+                                                    'en-IN',
+                                                    { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' }
+                                                )}
+                                            </td>
+                                            <td>
+                                                {dateObj.toLocaleTimeString(
+                                                    'en-IN',
+                                                    { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }
+                                                )} (IST)
+                                            </td>
                                         </tr>
                                     );
                                 })

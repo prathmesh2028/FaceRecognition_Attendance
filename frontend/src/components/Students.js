@@ -11,7 +11,9 @@ function Students() {
 
     const fetchStudents = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/students");
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/students`
+            );
             if (res.data.success) {
                 setStudents(res.data.students);
             }
@@ -25,7 +27,9 @@ function Students() {
         if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
 
         try {
-            const res = await axios.delete(`http://localhost:5000/api/students/${id}`);
+            const res = await axios.delete(
+                `${process.env.REACT_APP_API_URL}/api/students/${id}`
+            );
             if (res.data.success) {
                 alert("Student deleted successfully");
                 setStudents(students.filter(student => student.id !== id));
@@ -65,7 +69,10 @@ function Students() {
                                                 if (!d.includes('T')) d = d.replace(' ', 'T');
                                                 if (!d.endsWith('Z')) d += 'Z';
                                             }
-                                            return new Date(d).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+                                            return new Date(d).toLocaleString(
+                                                'en-IN',
+                                                { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }
+                                            );
                                         })()} (IST)</td>
                                         <td>
                                             <button

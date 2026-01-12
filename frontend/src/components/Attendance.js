@@ -34,7 +34,11 @@ function Attendance() {
                     const descriptor = Array.from(detections.descriptor);
 
                     try {
-                        const res = await axios.post("http://localhost:5000/api/mark-attendance", { descriptor });
+                        const res = await axios.post(
+                            `${process.env.REACT_APP_API_URL}/api/mark-attendance`,
+                            { descriptor }
+                        );
+
                         if (res.data.success) {
                             setStatus(`✅ Marked Present: ${res.data.match.name}`);
                         } else {
@@ -45,7 +49,7 @@ function Attendance() {
                     }
                 }
             }
-        }, 2000); // Check every 2 seconds
+        }, 2000);
 
         return () => clearInterval(interval);
     }, [modelsLoaded]);

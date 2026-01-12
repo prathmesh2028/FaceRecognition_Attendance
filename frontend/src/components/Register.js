@@ -48,7 +48,12 @@ function Register() {
 
             const descriptor = Array.from(detections.descriptor);
 
-            const res = await axios.post("http://localhost:5000/api/register", { name, rollNo, descriptor });
+            const res = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/register`,
+                { name, rollNo, descriptor }
+            );
+
+
 
             if (res.data.success) {
                 alert("Registered successfully!");
