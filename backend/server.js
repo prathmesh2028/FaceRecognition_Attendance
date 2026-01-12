@@ -2,7 +2,12 @@ const db = require('./config/db');
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const visionRoutes = require("./routes/visionRoute");
+let visionRoutes;
+try {
+    visionRoutes = require("./routes/visionRoute");
+} catch (error) {
+    console.warn("⚠️ Vision Routes not loaded (service-account.json missing or other error).");
+}
 
 const app = express();
 
@@ -10,7 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api/vision", visionRoutes);
+if (visionRoutes) {
+    app.use("/api/vision", visionRoutes);
+}
 
 // Register User (Store Name + Face Descriptor)
 app.post("/api/register", (req, res) => {
