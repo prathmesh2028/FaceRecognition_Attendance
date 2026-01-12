@@ -5,11 +5,15 @@ const REG_FILE = path.join(__dirname, '../registrations.json');
 const HIST_FILE = path.join(__dirname, '../history.json');
 
 // Initialize Files if not exist
-if (!fs.existsSync(REG_FILE)) {
-    fs.writeFileSync(REG_FILE, JSON.stringify([], null, 2));
-}
-if (!fs.existsSync(HIST_FILE)) {
-    fs.writeFileSync(HIST_FILE, JSON.stringify([], null, 2));
+try {
+    if (!fs.existsSync(REG_FILE)) {
+        fs.writeFileSync(REG_FILE, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(HIST_FILE)) {
+        fs.writeFileSync(HIST_FILE, JSON.stringify([], null, 2));
+    }
+} catch (err) {
+    console.error("⚠️ Could not initialize database files (Read-Only System?):", err.message);
 }
 
 const readJson = (file) => {
