@@ -7,9 +7,15 @@ const db = require("../config/db");  // ✅ Added MySQL connection
 const router = express.Router();
 
 // Google Vision Client
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: path.join(__dirname, "..", "service-account.json"),
-});
+// Google Vision Client
+let client;
+try {
+  client = new vision.ImageAnnotatorClient({
+    keyFilename: path.join(__dirname, "..", "service-account.json"),
+  });
+} catch (err) {
+  console.warn("⚠️ Google Vision Client could not be initialized (missing service-account.json?)");
+}
 
 // Multer config for file uploads
 const storage = multer.diskStorage({
@@ -83,6 +89,11 @@ router.post("/detect", upload.single("image"), async (req, res) => {
 
     const imagePath = path.join(__dirname, "..", req.file.path);
     console.log("IMAGE PATH:", imagePath);
+
+    if (!client) {
+      console.warn("❌ Vision API not initialized");
+      return res.status(500).json({ success: false, msg: "Vision API unavailable (Service Account missing)" });
+    }
 
     const [result] = await client.faceDetection(imagePath);
 
