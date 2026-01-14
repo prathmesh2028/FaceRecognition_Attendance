@@ -30,16 +30,17 @@ cd ../frontend && npm install
 ```
 
 ### 3. Environment Configuration
+
 **Backend** (`backend/.env`):
+Copy `backend/.env.example` to `backend/.env` and add your MongoDB URI:
 ```env
 MONGO_URI=your_mongodb_connection_string
 PORT=5000
 ```
 
 **Frontend** (`frontend/.env`):
-```env
-REACT_APP_API_URL=http://localhost:5000
-```
+- For **Local Development**: Set to `http://localhost:5000`
+- For **Production**: The file `frontend/.env.production` is already configured for the Render backend.
 
 ### 4. Run Locally
 ```bash
