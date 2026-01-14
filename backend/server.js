@@ -2,6 +2,7 @@ const jsonDb = require('./config/jsonDb');
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+
 let visionRoutes;
 try {
     visionRoutes = require("./routes/visionRoute");
@@ -11,7 +12,12 @@ try {
 
 const app = express();
 
-app.use(cors());
+// ✅ FIXED CORS (only once, correct origin, no trailing slash)
+app.use(cors({
+    origin: "https://face-recognition-attendance-duui.vercel.app"
+}));
+
+// JSON parser
 app.use(express.json());
 
 // Routes
@@ -37,7 +43,7 @@ app.post("/api/register", (req, res) => {
         const newStudent = {
             name,
             roll_no: rollNo,
-            face_descriptor: descriptor, // Store as array directly in JSON
+            face_descriptor: descriptor,
             registered_at: new Date().toISOString()
         };
 
@@ -59,7 +65,7 @@ app.post("/api/mark-attendance", (req, res) => {
 
         const students = jsonDb.getStudents();
         let bestMatch = null;
-        let minDistance = 0.6; // Threshold
+        let minDistance = 0.6;
 
         console.log(`Checking against ${students.length} registered students...`);
 
@@ -82,7 +88,6 @@ app.post("/api/mark-attendance", (req, res) => {
         if (bestMatch) {
             console.log(`✅ MATCH FOUND: ${bestMatch.name} (Distance: ${minDistance})`);
 
-            // Check recently marked (last 30 mins)
             const attendance = jsonDb.getAttendance();
             const thirtyMinsAgo = Date.now() - 30 * 60 * 1000;
 
@@ -100,7 +105,6 @@ app.post("/api/mark-attendance", (req, res) => {
                 });
             }
 
-            // Mark Attendance
             const record = {
                 name: bestMatch.name,
                 roll_no: bestMatch.roll_no,
@@ -132,7 +136,6 @@ app.delete("/api/attendance-history", (req, res) => {
 // Get Attendance History
 app.get("/api/attendance-history", (req, res) => {
     const history = jsonDb.getAttendance().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    // Map to format frontend expects
     const formatted = history.map(r => ({
         name: r.name,
         rollNo: r.roll_no,
@@ -155,7 +158,7 @@ app.get("/api/students", (req, res) => {
 
 // Delete Student
 app.delete("/api/students/:id", (req, res) => {
-    const { id } = req.params; // roll_no
+    const { id } = req.params;
     const deleted = jsonDb.deleteStudent(id);
     if (!deleted) {
         return res.status(404).json({ success: false, msg: "Student not found" });
@@ -163,9 +166,8 @@ app.delete("/api/students/:id", (req, res) => {
     res.json({ success: true, msg: "Student deleted" });
 });
 
-// Serve static assets in production
+// Static assets for production
 if (process.env.NODE_ENV === 'production') {
-    // Set static folder
     app.use(express.static(path.join(__dirname, 'build')));
 
     app.get('*', (req, res) => {
