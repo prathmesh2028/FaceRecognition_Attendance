@@ -1,27 +1,13 @@
-require('dotenv').config();
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 
-let db;
-
-if (process.env.DATABASE_URL) {
-    db = mysql.createConnection(process.env.DATABASE_URL);
-} else {
-    db = mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME || 'attendance_db',
-        port: process.env.DB_PORT || 3306,
-        ssl: { rejectUnauthorized: false }
-    });
-}
-
-db.connect((err) => {
-    if (err) {
-        console.log("MySQL Connection Failed: ", err.message);
-        return;
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
     }
-    console.log("MySQL Connected Successfully!");
-});
+};
 
-module.exports = db;
+module.exports = connectDB;

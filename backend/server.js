@@ -1,7 +1,15 @@
-const jsonDb = require('./config/jsonDb');
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+const Student = require("./models/Student");
+const Attendance = require("./models/Attendance");
+
+dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 let visionRoutes;
 try {
@@ -12,9 +20,10 @@ try {
 
 const app = express();
 
-// ✅ FIXED CORS (only once, correct origin, no trailing slash)
+// ✅ FIXED CORS
 app.use(cors({
-    origin: "https://face-recognition-attendance-duui.vercel.app"
+    origin: ["https://face-recognition-attendance-duui.vercel.app", "http://localhost:3000"],
+    credentials: true
 }));
 
 // JSON parser
@@ -26,7 +35,7 @@ if (visionRoutes) {
 }
 
 // Register User (Store Name + Face Descriptor)
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
     console.log("📥 Registration Request Received:", req.body.name, req.body.rollNo);
     try {
         const { name, rollNo, descriptor } = req.body;
@@ -35,19 +44,17 @@ app.post("/api/register", (req, res) => {
             return res.status(400).json({ success: false, msg: "Name, Roll No, and face data required" });
         }
 
-        const existing = jsonDb.findStudentByRollNo(rollNo);
+        const existing = await Student.findOne({ roll_no: rollNo });
         if (existing) {
             return res.status(400).json({ success: false, msg: "Roll Number already registered" });
         }
 
-        const newStudent = {
+        const newStudent = await Student.create({
             name,
             roll_no: rollNo,
-            face_descriptor: descriptor,
-            registered_at: new Date().toISOString()
-        };
+            face_descriptor: descriptor
+        });
 
-        jsonDb.addStudent(newStudent);
         console.log(`✅ Registered: ${name} (${rollNo})`);
         res.json({ success: true, student: { rollNo, name } });
 
@@ -58,14 +65,14 @@ app.post("/api/register", (req, res) => {
 });
 
 // Mark Attendance (Compare Face)
-app.post("/api/mark-attendance", (req, res) => {
+app.post("/api/mark-attendance", async (req, res) => {
     try {
         const { descriptor } = req.body;
         if (!descriptor) return res.status(400).json({ success: false, msg: "No face data provided" });
 
-        const students = jsonDb.getStudents();
+        const students = await Student.find({});
         let bestMatch = null;
-        let minDistance = 0.6;
+        let minDistance = 0.6; // Threshold
 
         console.log(`Checking against ${students.length} registered students...`);
 
@@ -88,13 +95,13 @@ app.post("/api/mark-attendance", (req, res) => {
         if (bestMatch) {
             console.log(`✅ MATCH FOUND: ${bestMatch.name} (Distance: ${minDistance})`);
 
-            const attendance = jsonDb.getAttendance();
-            const thirtyMinsAgo = Date.now() - 30 * 60 * 1000;
+            // Check if already marked in last 30 mins
+            const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-            const recent = attendance.find(r =>
-                r.roll_no === bestMatch.roll_no &&
-                new Date(r.timestamp).getTime() > thirtyMinsAgo
-            );
+            const recent = await Attendance.findOne({
+                roll_no: bestMatch.roll_no,
+                timestamp: { $gt: thirtyMinsAgo }
+            });
 
             if (recent) {
                 return res.json({
@@ -105,12 +112,12 @@ app.post("/api/mark-attendance", (req, res) => {
                 });
             }
 
-            const record = {
+            // Mark Attendance
+            await Attendance.create({
                 name: bestMatch.name,
                 roll_no: bestMatch.roll_no,
-                timestamp: new Date().toISOString()
-            };
-            jsonDb.addAttendance(record);
+                timestamp: new Date()
+            });
 
             return res.json({
                 success: true,
@@ -128,46 +135,65 @@ app.post("/api/mark-attendance", (req, res) => {
 });
 
 // Clear Attendance History
-app.delete("/api/attendance-history", (req, res) => {
-    jsonDb.clearAttendance();
-    res.json({ success: true, msg: "History cleared" });
+app.delete("/api/attendance-history", async (req, res) => {
+    try {
+        await Attendance.deleteMany({});
+        res.json({ success: true, msg: "History cleared" });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error clearing history" });
+    }
 });
 
 // Get Attendance History
-app.get("/api/attendance-history", (req, res) => {
-    const history = jsonDb.getAttendance().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const formatted = history.map(r => ({
-        name: r.name,
-        rollNo: r.roll_no,
-        timestamp: r.timestamp
-    }));
-    res.json({ success: true, history: formatted });
+app.get("/api/attendance-history", async (req, res) => {
+    try {
+        const history = await Attendance.find({}).sort({ timestamp: -1 });
+        const formatted = history.map(r => ({
+            name: r.name,
+            rollNo: r.roll_no,
+            timestamp: r.timestamp
+        }));
+        res.json({ success: true, history: formatted });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error fetching history" });
+    }
 });
 
 // Get All Students
-app.get("/api/students", (req, res) => {
-    const students = jsonDb.getStudents().sort((a, b) => new Date(b.registered_at) - new Date(a.registered_at));
-    const formatted = students.map(s => ({
-        id: s.roll_no,
-        name: s.name,
-        rollNo: s.roll_no,
-        registeredAt: s.registered_at
-    }));
-    res.json({ success: true, students: formatted });
+app.get("/api/students", async (req, res) => {
+    try {
+        const students = await Student.find({}).sort({ registered_at: -1 });
+        const formatted = students.map(s => ({
+            id: s.roll_no,
+            name: s.name,
+            rollNo: s.roll_no,
+            registeredAt: s.registered_at
+        }));
+        res.json({ success: true, students: formatted });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error fetching students" });
+    }
 });
 
 // Delete Student
-app.delete("/api/students/:id", (req, res) => {
-    const { id } = req.params;
-    const deleted = jsonDb.deleteStudent(id);
-    if (!deleted) {
-        return res.status(404).json({ success: false, msg: "Student not found" });
+app.delete("/api/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await Student.findOneAndDelete({ roll_no: id });
+
+        if (!deleted) {
+            return res.status(404).json({ success: false, msg: "Student not found" });
+        }
+        res.json({ success: true, msg: "Student deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: "Error deleting student" });
     }
-    res.json({ success: true, msg: "Student deleted" });
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`Backend running on port ${PORT}`);
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Backend running on port ${PORT}`);
+    });
 });

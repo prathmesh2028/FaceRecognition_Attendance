@@ -10,7 +10,7 @@ function Attendance() {
 
     useEffect(() => {
         const loadModels = async () => {
-            await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+            await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
             await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
             await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
             setModelsLoaded(true);
@@ -28,7 +28,7 @@ function Attendance() {
                 // Prevent processing if video is not ready or has 0 dimensions
                 if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
-                const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
 
                 if (detections) {
                     const descriptor = Array.from(detections.descriptor);
@@ -49,31 +49,30 @@ function Attendance() {
                     }
                 }
             }
-        }, 2000);
+        }, 1000); // Faster interval for tiny model
 
         return () => clearInterval(interval);
     }, [modelsLoaded]);
 
     return (
         <div className="page-container">
-            <div className="card" style={{ maxWidth: "700px" }}>
+            <div className="card attendance-card" style={{ maxWidth: "700px" }}>
                 <h2>Auto Attendance System</h2>
 
                 {!modelsLoaded ? (
                     <div className="loading-container">
-                        <div className="loader">
-                            <div className="loader-ring"></div>
-                        </div>
-                        <p className="loading-text">INITIALIZING SYSTEM...</p>
+                        <p className="loading-text">Initializing System...</p>
                     </div>
                 ) : (
                     <>
-                        <h3 style={{ color: status.includes("✅") ? "green" : "red" }}>{status}</h3>
-                        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+                        <h3 className={`status-text ${status.includes("✅") ? "success" : status.includes("❌") ? "error" : ""}`}>
+                            {status}
+                        </h3>
+                        <div className="webcam-wrapper">
                             <Webcam
                                 audio={false}
                                 ref={webcamRef}
-                                style={{ width: "100%", borderRadius: "10px" }}
+                                className="webcam-feed"
                             />
                         </div>
                     </>

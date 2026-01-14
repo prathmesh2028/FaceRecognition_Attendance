@@ -14,7 +14,8 @@ function Register() {
     useEffect(() => {
         const loadModels = async () => {
             try {
-                await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+                // Load TinyFaceDetector model instead of SSD Mobilenet
+                await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
                 await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
                 await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
                 console.log("Models loaded");
@@ -38,10 +39,12 @@ function Register() {
         setLoading(true);
         try {
             const img = await faceapi.fetchImage(imgSrc);
-            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+
+            // Use TinyFaceDetectorOptions
+            const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
 
             if (!detections) {
-                alert("No face detected! Try again.");
+                alert("No face detected! Please ensure better lighting or move closer.");
                 setLoading(false);
                 return;
             }
@@ -53,8 +56,6 @@ function Register() {
                 { name, rollNo, descriptor }
             );
 
-
-
             if (res.data.success) {
                 alert("Registered successfully!");
                 setImgSrc(null);
@@ -63,7 +64,8 @@ function Register() {
             }
         } catch (err) {
             console.error(err);
-            alert("Registration failed!");
+            const msg = err.response && err.response.data && err.response.data.msg ? err.response.data.msg : "Registration failed! Check console/backend.";
+            alert(msg);
         }
         setLoading(false);
     };
