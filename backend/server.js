@@ -21,10 +21,33 @@ try {
 const app = express();
 
 // ✅ FIXED CORS
+// ✅ FIXED CORS - Allow all Vercel apps and Localhost
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://face-recognition-attendance-duui.vercel.app"
+];
+
 app.use(cors({
-    origin: ["https://face-recognition-attendance-duui.vercel.app", "http://localhost:3000"],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Allow any Vercel deployment (preview or production)
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".vercel.app")) {
+            return callback(null, true);
+        } else {
+            console.log("❌ Blocked by CORS:", origin);
+            return callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
+
+// Debug Middleware
+app.use((req, res, next) => {
+    console.log(`👉 ${req.method} ${req.url} from ${req.headers.origin}`);
+    next();
+});
 
 // JSON parser
 app.use(express.json());
