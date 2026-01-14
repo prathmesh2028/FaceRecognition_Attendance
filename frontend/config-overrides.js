@@ -1,4 +1,4 @@
- const webpack = require('webpack');
+const webpack = require('webpack');
 
 module.exports = function override(config) {
     const fallback = config.resolve.fallback || {};
@@ -12,5 +12,9 @@ module.exports = function override(config) {
         "util": false
     });
     config.resolve.fallback = fallback;
+
+    // Suppress source map warnings from face-api.js
+    config.ignoreWarnings = [/Failed to parse source map/];
+
     return config;
 };

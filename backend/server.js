@@ -175,10 +175,6 @@ if (process.env.NODE_ENV === 'production') {
 
 const PORT = process.env.PORT || 5000;
 
-if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Backend running on port ${PORT}`);
-    });
-}
-
-module.exports = app;
+app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+});
