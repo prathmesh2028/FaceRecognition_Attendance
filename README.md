@@ -21,7 +21,7 @@ cd FaceRecognition_Attendence
 ```
 
 ### 2. Install Dependencies
-```bash
+```javascript
 npm install-all
 # OR manually:
 npm install
