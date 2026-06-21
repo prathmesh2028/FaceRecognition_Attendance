@@ -28,23 +28,27 @@ function Attendance() {
                 // Prevent processing if video is not ready or has 0 dimensions
                 if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
-                const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                try {
+                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
 
-                if (detections) {
-                    const descriptor = Array.from(detections.descriptor);
+                    if (detections) {
+                        const descriptor = Array.from(detections.descriptor);
 
-                    try {
-                        const res = await api.post('/api/attendance/mark', { descriptor }
-                        );
+                        try {
+                            const res = await api.post('/api/attendance/mark', { descriptor });
 
-                        if (res.data.success) {
-                            setStatus(`✅ Marked Present: ${res.data.match.name}`);
-                        } else {
-                            setStatus("❌ Face not recognized");
+                            if (res.data.success) {
+                                setStatus(`✅ Marked Present: ${res.data.match.name}`);
+                            } else {
+                                setStatus("❌ Face not recognized");
+                            }
+                        } catch (err) {
+                            console.log(err);
                         }
-                    } catch (err) {
-                        console.log(err);
                     }
+                } catch (apiErr) {
+                    // Ignore errors caused by component unmounting mid-detection
+                    console.warn("Detection interrupted:", apiErr);
                 }
             }
         }, 1000); // Faster interval for tiny model
