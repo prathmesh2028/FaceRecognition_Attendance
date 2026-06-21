@@ -99,8 +99,11 @@ exports.suspendAdmin = async (req, res) => {
         await adminToSuspend.save();
 
         await logAction('ADMIN_SUSPENDED', req.admin._id, adminToSuspend._id.toString(), { email: adminToSuspend.email }, req.ip);
-        await sendAccountSuspended(adminToSuspend.email, adminToSuspend.name);
+        const emailStatus = await sendAccountSuspended(adminToSuspend.email, adminToSuspend.name);
 
+        if (emailStatus && !emailStatus.success) {
+            return res.json({ success: true, msg: `Admin suspended successfully, BUT email failed: ${emailStatus.error}` });
+        }
         res.json({ success: true, msg: 'Admin account suspended successfully.' });
     } catch (error) {
         res.status(500).json({ success: false, msg: 'Server Error' });

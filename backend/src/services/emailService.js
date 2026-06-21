@@ -106,11 +106,6 @@ const sendRequestRejected = async (email, name) => {
 
 const sendAccountSuspended = async (email, name) => {
     try {
-        console.log(`[EMAIL_DEBUG] Attempting to send suspension email to ${email}...`);
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error("[EMAIL_DEBUG] CRITICAL ERROR: EMAIL_USER or EMAIL_PASS is undefined in Render Environment Variables!");
-        }
-        
         await transporter.sendMail({
             from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
             to: email,
@@ -126,9 +121,9 @@ const sendAccountSuspended = async (email, name) => {
                 </div>
             `
         });
-        console.log(`[EMAIL_DEBUG] Successfully sent suspension email to ${email}`);
+        return { success: true };
     } catch (error) {
-        console.error("[EMAIL_DEBUG] Error sending suspension email. FULL DETAILS:", error);
+        return { success: false, error: error.message || "Unknown SMTP Error" };
     }
 };
 
