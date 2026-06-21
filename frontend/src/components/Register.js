@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
-import axios from "axios";
+import api from "../services/api";
 
 function Register() {
     const [name, setName] = useState("");
@@ -51,10 +51,7 @@ function Register() {
 
             const descriptor = Array.from(detections.descriptor);
 
-            const res = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/register`,
-                { name, rollNo, descriptor }
-            );
+            const res = await api.post('/api/students/register', { name, rollNo, descriptor });
 
             if (res.data.success) {
                 alert("Registered successfully!");

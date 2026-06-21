@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 
 function Students() {
     const [students, setStudents] = useState([]);
@@ -11,9 +11,7 @@ function Students() {
 
     const fetchStudents = async () => {
         try {
-            const res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/students`
-            );
+            const res = await api.get('/api/students');
             if (res.data.success) {
                 setStudents(res.data.students);
             }
@@ -27,9 +25,7 @@ function Students() {
         if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
 
         try {
-            const res = await axios.delete(
-                `${process.env.REACT_APP_API_URL}/api/students/${id}`
-            );
+            const res = await api.delete(`/api/students/${id}`);
             if (res.data.success) {
                 alert("Student deleted successfully");
                 setStudents(students.filter(student => student.id !== id));

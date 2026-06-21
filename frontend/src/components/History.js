@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"; 
-import axios from "axios";
+import api from "../services/api";
 
 function History() {
     const [history, setHistory] = useState([]);
@@ -11,9 +11,7 @@ function History() {
 
     const fetchHistory = async () => {
         try {
-            const res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/attendance-history`
-            );
+            const res = await api.get('/api/attendance');
             if (res.data.success) {
                 setHistory(res.data.history);
             }
@@ -26,9 +24,7 @@ function History() {
     const clearHistory = async () => {
         if (!window.confirm("Are you sure you want to clear ALL attendance history?")) return;
         try {
-            const res = await axios.delete(
-                `${process.env.REACT_APP_API_URL}/api/attendance-history`
-            );
+            const res = await api.delete('/api/attendance');
             if (res.data.success) {
                 setHistory([]);
                 alert("History cleared!");

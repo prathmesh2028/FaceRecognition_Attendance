@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
-import axios from "axios";
+import api from "../services/api";
 
 function Attendance() {
     const [status, setStatus] = useState("Scanning...");
@@ -34,9 +34,7 @@ function Attendance() {
                     const descriptor = Array.from(detections.descriptor);
 
                     try {
-                        const res = await axios.post(
-                            `${process.env.REACT_APP_API_URL}/api/mark-attendance`,
-                            { descriptor }
+                        const res = await api.post('/api/attendance/mark', { descriptor }
                         );
 
                         if (res.data.success) {

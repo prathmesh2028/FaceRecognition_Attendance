@@ -4,11 +4,22 @@ import Attendance from "./components/Attendance";
 import History from "./components/History";
 import Students from "./components/Students";
 import Navbar from "./components/Navbar";
+import Login from "./components/Login";
+import ForgotPassword from "./components/ForgotPassword";
+import VerifyOTP from "./components/VerifyOTP";
+import ResetPassword from "./components/ResetPassword";
+import ChangePassword from "./components/ChangePassword";
+import RegisterAdmin from "./components/RegisterAdmin";
+import RequestAccess from "./components/RequestAccess";
+import AdminRequests from "./components/AdminRequests";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 import "./App.css";
 
 function Home() {
+  const { admin } = useAuth();
   return (
     <div className="page-container">
       <div className="card">
@@ -17,10 +28,16 @@ function Home() {
           Secure, automated, and fast attendance system.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <Link to="/register" className="btn">Register New Student</Link>
           <Link to="/attendance" className="btn btn-secondary">Start Attendance Scanner</Link>
-          <Link to="/students" className="btn btn-secondary">Manage Students</Link>
-          <Link to="/history" className="btn btn-secondary" style={{ backgroundColor: "#374151", color: "white" }}>View History</Link>
+          <Link to="/request-access" className="btn" style={{ backgroundColor: "#10B981" }}>Request Admin Access</Link>
+          {admin && (
+            <>
+              <Link to="/register" className="btn">Register New Student</Link>
+              <Link to="/students" className="btn btn-secondary">Manage Students</Link>
+              <Link to="/history" className="btn btn-secondary" style={{ backgroundColor: "#374151", color: "white" }}>View History</Link>
+              {admin.role === 'SUPER_ADMIN' && <Link to="/admin-requests" className="btn" style={{ backgroundColor: "#8B5CF6" }}>View Access Requests</Link>}
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -72,19 +89,78 @@ function App() {
   }
 
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/students" element={<Students />} />
-      </Routes>
-      <footer className="footer">
-        <p>&copy; All rights reserved 2026</p>
-      </footer>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/request-access" element={<RequestAccess />} />
+          <Route 
+            path="/change-password" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <ChangePassword />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/register-admin" 
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <RegisterAdmin />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin-requests" 
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AdminRequests />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <Register />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/attendance" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <Attendance />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/history" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <History />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/students" 
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <Students />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+        <footer className="footer">
+          <p>&copy; All rights reserved 2026</p>
+        </footer>
+      </Router>
+    </AuthProvider>
   );
 }
 
