@@ -102,7 +102,7 @@ exports.suspendAdmin = async (req, res) => {
         const emailStatus = await sendAccountSuspended(adminToSuspend.email, adminToSuspend.name);
 
         if (emailStatus && !emailStatus.success) {
-            return res.json({ success: true, msg: `Admin suspended successfully, BUT email failed: ${emailStatus.error}` });
+            return res.status(400).json({ success: false, msg: `Admin suspended, BUT email failed: ${emailStatus.error}` });
         }
         res.json({ success: true, msg: 'Admin account suspended successfully.' });
     } catch (error) {
@@ -123,7 +123,11 @@ exports.reactivateAdmin = async (req, res) => {
         await adminToActivate.save();
 
         await logAction('ADMIN_REACTIVATED', req.admin._id, adminToActivate._id.toString(), { email: adminToActivate.email }, req.ip);
-        await sendAccountReactivated(adminToActivate.email, adminToActivate.name);
+        const emailStatus = await sendAccountReactivated(adminToActivate.email, adminToActivate.name);
+
+        if (emailStatus && !emailStatus.success) {
+            return res.status(400).json({ success: false, msg: `Admin reactivated, BUT email failed: ${emailStatus.error}` });
+        }
 
         res.json({ success: true, msg: 'Admin account reactivated successfully.' });
     } catch (error) {
@@ -146,7 +150,11 @@ exports.deleteAdmin = async (req, res) => {
 
         await Admin.deleteOne({ _id: req.params.id });
         await logAction('ADMIN_DELETED', req.admin._id, adminToDelete._id.toString(), { email: adminToDelete.email }, req.ip);
-        await sendAccountDeleted(adminToDelete.email, adminToDelete.name);
+        const emailStatus = await sendAccountDeleted(adminToDelete.email, adminToDelete.name);
+
+        if (emailStatus && !emailStatus.success) {
+            return res.status(400).json({ success: false, msg: `Admin deleted, BUT email failed: ${emailStatus.error}` });
+        }
 
         res.json({ success: true, msg: 'Admin deleted successfully.' });
     } catch (error) {
