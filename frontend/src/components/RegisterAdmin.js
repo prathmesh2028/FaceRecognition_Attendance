@@ -19,7 +19,7 @@ const RegisterAdmin = () => {
         setError('');
         setMsg('');
         try {
-            const res = await api.post('/api/admins', { name, email, password, role });
+            await api.post('/api/admins', { name, email, password, role });
             setMsg('Admin registered successfully! They can now log in.');
             setTimeout(() => {
                 navigate('/');
