@@ -1,7 +1,13 @@
 const Admin = require('../models/Admin');
 const AdminRequest = require('../models/AdminRequest');
 const { logAction } = require('../services/auditService');
-const { sendRequestApproved, sendRequestRejected } = require('../services/emailService');
+const { 
+    sendRequestApproved, 
+    sendRequestRejected,
+    sendAccountSuspended,
+    sendAccountReactivated,
+    sendAccountDeleted
+} = require('../services/emailService');
 
 // @desc    Get all admin requests
 // @route   GET /api/admins/requests
@@ -93,6 +99,7 @@ exports.suspendAdmin = async (req, res) => {
         await adminToSuspend.save();
 
         await logAction('ADMIN_SUSPENDED', req.admin._id, adminToSuspend._id.toString(), { email: adminToSuspend.email }, req.ip);
+        await sendAccountSuspended(adminToSuspend.email, adminToSuspend.name);
 
         res.json({ success: true, msg: 'Admin account suspended successfully.' });
     } catch (error) {
@@ -113,6 +120,7 @@ exports.reactivateAdmin = async (req, res) => {
         await adminToActivate.save();
 
         await logAction('ADMIN_REACTIVATED', req.admin._id, adminToActivate._id.toString(), { email: adminToActivate.email }, req.ip);
+        await sendAccountReactivated(adminToActivate.email, adminToActivate.name);
 
         res.json({ success: true, msg: 'Admin account reactivated successfully.' });
     } catch (error) {
@@ -135,6 +143,7 @@ exports.deleteAdmin = async (req, res) => {
 
         await Admin.deleteOne({ _id: req.params.id });
         await logAction('ADMIN_DELETED', req.admin._id, adminToDelete._id.toString(), { email: adminToDelete.email }, req.ip);
+        await sendAccountDeleted(adminToDelete.email, adminToDelete.name);
 
         res.json({ success: true, msg: 'Admin deleted successfully.' });
     } catch (error) {

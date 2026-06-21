@@ -102,4 +102,101 @@ const sendRequestRejected = async (email, name) => {
     }
 };
 
-module.exports = { sendOTP, sendAccessRequestNotification, sendRequestApproved, sendRequestRejected };
+const sendAccountSuspended = async (email, name) => {
+    try {
+        await transporter.sendMail({
+            from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Account Suspended",
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #EF4444;">Account Suspended</h2>
+                    <p>Dear ${name},</p>
+                    <p>Your admin account has been <strong>suspended</strong> by the Super Admin.</p>
+                    <p>You will not be able to log in until your account is reactivated.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">Face Recognition Attendance System</p>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("Error sending suspension email:", error);
+    }
+};
+
+const sendAccountReactivated = async (email, name) => {
+    try {
+        await transporter.sendMail({
+            from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Account Reactivated",
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #10B981;">Account Reactivated</h2>
+                    <p>Dear ${name},</p>
+                    <p>Your admin account has been <strong>reactivated</strong> by the Super Admin.</p>
+                    <p>You can now log in and access the dashboard again.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">Face Recognition Attendance System</p>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("Error sending reactivation email:", error);
+    }
+};
+
+const sendAccountDeleted = async (email, name) => {
+    try {
+        await transporter.sendMail({
+            from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Account Deleted",
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #EF4444;">Account Deleted</h2>
+                    <p>Dear ${name},</p>
+                    <p>Your admin account has been <strong>permanently deleted</strong> by the Super Admin.</p>
+                    <p>Your access has been completely revoked.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">Face Recognition Attendance System</p>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("Error sending deletion email:", error);
+    }
+};
+
+const sendAccessRequestReceived = async (email, name) => {
+    try {
+        await transporter.sendMail({
+            from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Access Request Received",
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #3B82F6;">Request Received</h2>
+                    <p>Dear ${name},</p>
+                    <p>We have successfully received your request for admin access.</p>
+                    <p>Your request is currently <strong>pending review</strong> by the Super Admin. You will receive another email once a decision has been made.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">Face Recognition Attendance System</p>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("Error sending request receipt email:", error);
+    }
+};
+
+module.exports = { 
+    sendOTP, 
+    sendAccessRequestNotification, 
+    sendRequestApproved, 
+    sendRequestRejected,
+    sendAccountSuspended,
+    sendAccountReactivated,
+    sendAccountDeleted,
+    sendAccessRequestReceived
+};

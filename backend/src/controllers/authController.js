@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admin');
 const AdminRequest = require('../models/AdminRequest');
 const { generateToken, generateRefreshToken } = require('../utils/generateToken');
-const { sendOTP, sendAccessRequestNotification } = require('../services/emailService');
+const { 
+    sendOTP, 
+    sendAccessRequestNotification,
+    sendAccessRequestReceived 
+} = require('../services/emailService');
 const { logAction } = require('../services/auditService');
 const crypto = require('crypto');
 
@@ -221,7 +225,8 @@ exports.requestAccess = async (req, res) => {
         };
 
         await AdminRequest.create(requestData);
-        await sendAccessRequestNotification(requestData);
+        await sendAccessRequestNotification(requestData); // to Super Admin
+        await sendAccessRequestReceived(email, name); // to User
 
         res.status(201).json({ success: true, msg: 'Access request submitted successfully. Super Admin will review your request.' });
     } catch (error) {

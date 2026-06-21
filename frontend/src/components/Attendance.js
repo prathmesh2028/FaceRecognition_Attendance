@@ -75,6 +75,7 @@ function Attendance() {
                                 audio={false}
                                 ref={webcamRef}
                                 className="webcam-feed"
+                                onUserMediaError={(err) => setStatus(`❌ Camera Error: ${err.message || err.name}`)}
                             />
                         </div>
                     </>
