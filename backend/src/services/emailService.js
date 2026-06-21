@@ -106,6 +106,11 @@ const sendRequestRejected = async (email, name) => {
 
 const sendAccountSuspended = async (email, name) => {
     try {
+        console.log(`[EMAIL_DEBUG] Attempting to send suspension email to ${email}...`);
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.error("[EMAIL_DEBUG] CRITICAL ERROR: EMAIL_USER or EMAIL_PASS is undefined in Render Environment Variables!");
+        }
+        
         await transporter.sendMail({
             from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
             to: email,
@@ -121,13 +126,15 @@ const sendAccountSuspended = async (email, name) => {
                 </div>
             `
         });
+        console.log(`[EMAIL_DEBUG] Successfully sent suspension email to ${email}`);
     } catch (error) {
-        console.error("Error sending suspension email:", error);
+        console.error("[EMAIL_DEBUG] Error sending suspension email. FULL DETAILS:", error);
     }
 };
 
 const sendAccountReactivated = async (email, name) => {
     try {
+        console.log(`[EMAIL_DEBUG] Attempting to send reactivation email to ${email}...`);
         await transporter.sendMail({
             from: `"Face Recognition Security" <${process.env.EMAIL_USER}>`,
             to: email,
@@ -143,8 +150,9 @@ const sendAccountReactivated = async (email, name) => {
                 </div>
             `
         });
+        console.log(`[EMAIL_DEBUG] Successfully sent reactivation email to ${email}`);
     } catch (error) {
-        console.error("Error sending reactivation email:", error);
+        console.error("[EMAIL_DEBUG] Error sending reactivation email:", error);
     }
 };
 
